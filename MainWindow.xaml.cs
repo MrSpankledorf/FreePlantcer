@@ -47,39 +47,6 @@ namespace FreePlantcer
 
         }
 
-
-
-
-        //TreeNode tree = new TreeNode("2022")
-        //       {
-        //           new TreeNode("Jan")
-        //               {
-        //                   new TreeNode("Wk1")
-        //                        {
-        //                       new TreeNode("Mon"),
-        //                       new TreeNode("Tues"),
-        //                       new TreeNode("Wed"),
-        //                       new TreeNode("Thurs"),
-        //                       new TreeNode("Fri"),
-        //                       new TreeNode("Sat"),
-        //                       new TreeNode("Sun"),
-        //                        },
-        //                   new TreeNode("Wk2"),
-        //                   new TreeNode("Wk3"),
-        //                   new TreeNode("Wk4"),
-        //               },
-        //           new TreeNode("Category 2")
-        //               {
-        //                   new TreeNode("Item 1"),
-        //                   new TreeNode("Item 2"),
-        //                   new TreeNode("Item 3"),
-        //                   new TreeNode("Item 4"),
-        //               }
-
-        //       };
-
-
-
         Dictionary<string, string> mydictionary = new Dictionary<string, string>();
         void GetTime(string deight, string currentTime)
         {
@@ -160,84 +127,26 @@ namespace FreePlantcer
         
             
             string connetionString = "Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=CalendarDatabase;Integrated Security=True";
-            SqlConnection cnn = new SqlConnection(connetionString);
-            SqlDataReader dataReader;
-            
-            string InsertQuery = "UPDATE CalendarTable_1 SET TimeLogged_1 = @t Where Date = '12/25/20';";
-            string updateTime = "P Diddy";
-            
+            SqlConnection cnn = new SqlConnection(connetionString); //Connecting to SQL DB
+            //SqlDataReader dataReader;
 
+            string dateToLog = "12/25/20";
+            string updateTime = "P Diddy";
+            string InsertQuery = "UPDATE CalendarTable_1 SET TimeLogged_1 = @t Where Date = @d;"; //Querying SQL DB
             
+                                   
             SqlCommand cmd = cnn.CreateCommand();
-            
             cnn.Open();
             MessageBox.Show("Connection Open  !");
-            cmd.CommandText = InsertQuery;
+
+            cmd.CommandText = InsertQuery;  //Inserting Values to DB
+            cmd.Parameters.AddWithValue("@d", dateToLog); 
             cmd.Parameters.AddWithValue("@t", updateTime);
             cmd.ExecuteNonQuery();
             cnn.Close();
+
             MessageBox.Show("Connection Closed  !");
         }
-
-
-
-
     }
-
-    //class TreeNode : IEnumerable<TreeNode>
-    //{
-    //    private readonly Dictionary<string, TreeNode> _children =
-    //                                        new Dictionary<string, TreeNode>();
-
-    //    public readonly string ID;
-    //    public TreeNode Parent { get; private set; }
-
-    //    public TreeNode(string id)
-    //    {
-    //        this.ID = id;
-    //    }
-
-    //    public TreeNode GetChild(string id)
-    //    {
-    //        return this._children[id];
-    //    }
-
-    //    public void Add(TreeNode item)
-    //    {
-    //        if (item.Parent != null)
-    //        {
-    //            item.Parent._children.Remove(item.ID);
-    //        }
-
-    //        item.Parent = this;
-    //        this._children.Add(item.ID, item);
-    //    }
-
-    //    public IEnumerator<TreeNode> GetEnumerator()
-    //    {
-    //        return this._children.Values.GetEnumerator();
-    //    }
-
-    //    IEnumerator IEnumerable.GetEnumerator()
-    //    {
-    //        return this.GetEnumerator();
-    //    }
-
-    //    public int Count
-    //    {
-    //        get { return this._children.Count; }
-    //    }
-
-
-    //}
-    
-
-
-
-
-
-
-
-     
 }
 
