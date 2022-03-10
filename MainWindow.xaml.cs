@@ -17,13 +17,10 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Diagnostics;
 using System.Data.SqlClient;
+using SQLite;
 
 namespace FreePlantcer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-
     public partial class MainWindow : Window
     {
         DispatcherTimer dt = new DispatcherTimer();
@@ -33,7 +30,8 @@ namespace FreePlantcer
         double rate = 15.00;
         double hourlyRate;
         string hoursWorked;
-       
+        List<Contact> contacts;
+
         public MainWindow()
         {
 
@@ -42,34 +40,46 @@ namespace FreePlantcer
             dt.Interval = new TimeSpan(0, 0, 0, 0, 1);
             calendar1.SelectedDate = DateTime.Today;
 
-
-
-
+            contacts = new List<Contact>();
+            
         }
-
-        Dictionary<string, string> mydictionary = new Dictionary<string, string>();
-        void GetTime(string deight, string currentTime)
+        void DeleteDatabase()
         {
-
-            bool keyExists = mydictionary.ContainsKey(deight);
-            if (!keyExists)
+            using (SQLiteConnection conn = new SQLiteConnection(App.databasePath))
             {
-                mydictionary.Add(deight, currentTime);
-                elapsedtimeitem.Text = datetxtblock.Text + " " + mydictionary[deight];
-
-
+                conn.Execute("DELETE FROM Contact");
             }
-            else
-            {
-                //elapsedtimeitem.Text = " " + DateTime.Today;
-                elapsedtimeitem.Text = ("Already Logged!");
-            }
-
-
-
-
-
         }
+        void WriteDatabase()
+        {
+            Contact contact = new Contact()
+            {
+                Date = datetxtblock.Text,
+                loggedTime = clocktxtblock.Text,
+                incomeMade = incomebox.Text,
+
+            };
+
+            using (SQLiteConnection conn = new SQLiteConnection(App.databasePath))
+            {
+                conn.CreateTable<Contact>();
+                conn.Insert(contact);
+            }
+        }
+        void ReadDatabase()
+        {
+            using (SQLite.SQLiteConnection conn = new SQLite.SQLiteConnection(App.databasePath))
+            {
+                conn.CreateTable<Contact>();
+                contacts = (conn.Table<Contact>().ToList()).OrderBy(c => c.Date).ToList();
+            }
+
+            if (contacts != null)
+            {
+                elapsedtimeitem.Text = String.Join(", ", contacts) + "\n";
+            }
+        }
+
         void dt_Tick(object sender, EventArgs e)
         {
             if (sw.IsRunning)
@@ -94,58 +104,48 @@ namespace FreePlantcer
             }
         }
 
+        // Start Button
         private void startbtn_Click(object sender, RoutedEventArgs e)
         {
             sw.Start();
             dt.Start();
         }
 
+        // Stop Button
         private void stopbtn_Click(object sender, RoutedEventArgs e)
         {
             if (sw.IsRunning)
             {
                 sw.Stop();
             }
-
         }
 
+        // Reset Button
         private void resetbtn_Click(object sender, RoutedEventArgs e)
         {
             sw.Reset();
             clocktxtblock.Text = "00:00:00";
-
-
-
         }
 
-
-
+        // Log Button
         private void logbtn_Click(object sender, RoutedEventArgs e)
         {
-            GetTime(datetxtblock.Text, currentTime);
-
-        
             
-            string connetionString = "Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=CalendarDatabase;Integrated Security=True";
-            SqlConnection cnn = new SqlConnection(connetionString); //Connecting to SQL DB
-            //SqlDataReader dataReader;
-
-            string dateToLog = "12/25/20";
-            string updateTime = "P Diddy";
-            string InsertQuery = "UPDATE CalendarTable_1 SET TimeLogged_1 = @t Where Date = @d;"; //Querying SQL DB
-            
-                                   
-            SqlCommand cmd = cnn.CreateCommand();
-            cnn.Open();
-            MessageBox.Show("Connection Open  !");
-
-            cmd.CommandText = InsertQuery;  //Inserting Values to DB
-            cmd.Parameters.AddWithValue("@d", dateToLog); 
-            cmd.Parameters.AddWithValue("@t", updateTime);
-            cmd.ExecuteNonQuery();
-            cnn.Close();
-
-            MessageBox.Show("Connection Closed  !");
+            WriteDatabase();
+            ReadDatabase();
+        }
+    }
+    // Contact Class
+    public class Contact
+    {
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string Date { get; set; }
+        public string loggedTime { get; set; }
+        public string incomeMade { get; set; }
+        public override string ToString()
+        {
+            return $" | {Date} - {loggedTime} - {incomeMade} | ";
         }
     }
 }
